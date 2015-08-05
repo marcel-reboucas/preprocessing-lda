@@ -13,14 +13,14 @@ import org.jsoup.Jsoup;
 
 import porter.Stemmer;
 
-
 /**
  * @author Marcel
  *
  */
 public class Preprocessor {
 
-	static final String RESOURCES_FOLDER = "resources"+File.separator;
+	
+	static final String RESOURCES_FOLDER = "res"+File.separator+"resources"+File.separator;
 	static final String STOP_WORDS_FILE = "stopwords.txt";
 	
 	private Stemmer porterStemmer;
@@ -65,10 +65,13 @@ public class Preprocessor {
 		String result = text;
 		String[] words = text.split("\\s+");
 		List<String> wordsList = Arrays.asList(words);
-		//System.out.println(wordsList);
+		
 		for(String word : wordsList){
 			if(stopWordList.contains(word.toLowerCase())){
-				result = result.replaceAll("\\b"+word+"\\b", "");
+				//doesn't match if followed by the characters in undesiredMatches
+				//ie. prevents I removing the I in I'm.
+				String undesiredMatches = "'`";
+				result = result.replaceAll("\\b"+word+"\\b(?!["+undesiredMatches+"].*)", "");
 			}
 		}
 		result = result.replaceAll("\\s+", " ");
@@ -84,11 +87,11 @@ public class Preprocessor {
 		
 		String result = text;
 		
-		//removes the trailing punctuation.
-		result = result.replaceAll("\\p{Punct}\\B", ""); 
-		//removes the leading punctuation.
-		result = result.replaceAll("\\B\\p{Punct}", "");
-	    return result.trim();
+		//removes the trailing punctuation (leaves + and _ characters).
+		result = result.replaceAll("[\\p{Punct}&&[^+_]]\\B", ""); 
+		//removes the leading punctuation (leaves + and _ characters).
+		result = result.replaceAll("\\B[\\p{Punct}&&[^+_]]", "");
+	    return result;
 	}
 
 	/**
@@ -104,13 +107,15 @@ public class Preprocessor {
 		List<String> wordsList = Arrays.asList(words);
 		
 		for(String word : wordsList){
+
+			//only if the word doesn't have any punctation: prevents an undesirable effect on the regex
+			if(!word.matches(".*[\\p{Punct}].*")){
+				porterStemmer.add(word);
+				porterStemmer.stem();
 			
-			porterStemmer.add(word);
-			porterStemmer.stem();
-			
-			String stemmedWord = porterStemmer.toString();
-			
-			result = result.replaceAll("\\b"+word+"\\b", stemmedWord);
+				String stemmedWord = porterStemmer.toString();
+				result = result.replaceAll("\\b"+word+"\\b", stemmedWord);
+			}
 		}
 		
 		return result.trim();
@@ -130,7 +135,7 @@ public class Preprocessor {
 		result = this.removeStopWords(result);
 		result = this.removePunctuation(result);
 		result = this.applyPorterStemmer(result);
-		
+
 		return result;
 	}
 	/**
@@ -139,10 +144,13 @@ public class Preprocessor {
 	 */
 	private void loadStopWordsFromFile(){
 		
+		
 		File stopWordsFile = new File(RESOURCES_FOLDER+STOP_WORDS_FILE);
+		
 		FileReader fr;
 		
 		try {
+			
 			fr = new FileReader(stopWordsFile);
 			BufferedReader br = new BufferedReader(fr);
 			
