@@ -14,12 +14,17 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		test();
-		/*
+		//test();
+		
+		//String inputFilePath = "C:\\Users\\Marcel\\Desktop\\TG\\test\\input.txt";
+		//String outputFilePath = "C:\\Users\\Marcel\\Desktop\\TG\\test\\output.txt";
+		
 		String inputFilePath = args[0];
 		String outputFilePath = args[1];
 
 		try {
+			System.out.println("Trying to load file");
+			
 			File inputFile = new File(inputFilePath);
 			FileReader fileReader = new FileReader(inputFile);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -28,12 +33,13 @@ public class Main {
 			String aux = "";
 
 			while ((aux = bufferedReader.readLine()) != null) {
-				builder.append(aux);
+				builder.append(aux+"\n");
 			}
 			bufferedReader.close();
 
 			String text = builder.toString();
 
+			System.out.println("Processing...");
 			Preprocessor pp = new Preprocessor();
 			String preprocessedText = pp.processString(text);
 			
@@ -41,12 +47,13 @@ public class Main {
 			fileOutputStream.write(preprocessedText.getBytes());
 			fileOutputStream.close();
 		              	
+			System.out.println("Processing ended.");
 		} catch (FileNotFoundException e) {
 			System.out.println("ERROR: File " + inputFilePath + " not found.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 
 	}
 
