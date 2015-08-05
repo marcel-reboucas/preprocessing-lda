@@ -19,27 +19,27 @@ public class Test {
 		System.out.println(st.toString());
 		
 		
-		String oi = pp.removeCodeSnippets("Esse e <oi> meu </oi> codigo <code> oiii <code> ahahahaha </code> oiii </code> lelele");
-		System.out.println(oi);
+		String test1 = pp.removeCodeSnippets("Esse e <oi> meu </oi> codigo <code> oiii <code> ahahahaha </code> oiii </code> lelele");
+		System.out.println(test1);
 		
-		String oi2 = pp.removeHtmlTags("Esse e meu codigo <a href=''> oiii <code> ahahahaha <code> oiii <code> lelele");
-		System.out.println(oi2);
+		String test2 = pp.removeHtmlTags("Esse e meu codigo <a href=''> oiii <code> ahahahaha <code> oiii <code> lelele");
+		System.out.println(test2);
 		
-		String oi3 = pp.removeStopWords("This is a text, with a lot of information!");
-		System.out.println(oi3);
+		String test3 = pp.removeStopWords("This is a text, with a lot of information! I'm so happy");
+		System.out.println(test3);
 		
-		String oi4 = pp.removePunctuation("This is a text, with a lot of .information.com!");
-		System.out.println(oi4);
+		String test4 = pp.removePunctuation("This. is a text, with a lot of .information.com!");
+		System.out.println(test4);
 		
-		String oi5 = "<p>I've been having issues getting the C sockets API to work properly in "
+		String test5 = "<p>I've been having issues getting the C sockets API to work properly in "
 				+ "	C++. Specifically, although I am including sys/socket.h, I still get compile "
 				+ "time errors telling me that AF_INET is not defined. Am I missing something "
-				+ "obvious, or could this be related to the fact that I'm doing this coding on"
+				+ "obvious, or could this be related to the fact that I'm doing this coding on "
 				+ "z/OS and my problems are much more complicated? </p>";
 		
 		
 		
 		System.out.println();
-		System.out.println(pp.proccessString(oi5));
+		System.out.println(pp.proccessString(test5));
 	}
 }

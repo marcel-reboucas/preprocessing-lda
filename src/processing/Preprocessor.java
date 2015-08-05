@@ -61,7 +61,7 @@ public class Preprocessor {
 		String result = text;
 		String[] words = text.split("\\s+");
 		List<String> wordsList = Arrays.asList(words);
-		
+		//System.out.println(wordsList);
 		for(String word : wordsList){
 			if(stopWordList.contains(word.toLowerCase())){
 				result = result.replaceAll("\\b"+word+"\\b", "");
