@@ -40,6 +40,6 @@ public class Test {
 		
 		
 		System.out.println();
-		System.out.println(pp.proccessString(test5));
+		System.out.println(pp.processString(test5));
 	}
 }

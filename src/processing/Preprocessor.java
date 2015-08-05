@@ -14,6 +14,10 @@ import org.jsoup.Jsoup;
 import porter.Stemmer;
 
 
+/**
+ * @author Marcel
+ *
+ */
 public class Preprocessor {
 
 	static final String RESOURCES_FOLDER = "resources"+File.separator;
@@ -117,7 +121,7 @@ public class Preprocessor {
 	 * @param text
 	 * @return
 	 */
-	public String proccessString(String text) {
+	public String processString(String text) {
 		
 		String result = text.toLowerCase();
 		
@@ -143,8 +147,8 @@ public class Preprocessor {
 			BufferedReader br = new BufferedReader(fr);
 			
 			String line = null;
+			
 			try {
-				
 				while((line = br.readLine()) != null){
 					String[] words = line.split("\\ss*");
 					
