@@ -40,7 +40,7 @@ public class Preprocessor {
 	public String removeCodeSnippets(String text) {
 
 		String result = text;
-		result = result.replaceAll("<code>.*?</code>", "");
+		result = result.replaceAll("<code>(?s:.)*</code>", "");
 		result = result.replaceAll("\\s+", " ");
 		return result.trim();
 	}
