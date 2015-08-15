@@ -5,26 +5,64 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 
 import porter.Stemmer;
 import processing.Preprocessor;
 
 public class Main {
 
+	public final static String CSV_OUTPUT_FOLDER_NAME = "output";
+	public final static String CSV_OUTPUT_BODY_FOLDER_NAME = "outputBody";
+
 	public static void main(String[] args) {
-		
-		//test();
-		
-		//String inputFilePath = "C:\\Users\\Marcel\\Desktop\\TG\\test\\input.txt";
-		//String outputFilePath = "C:\\Users\\Marcel\\Desktop\\TG\\test\\output.txt";
-		
-		String inputFilePath = args[0];
-		String outputFilePath = args[1];
+
+		Scanner in = new Scanner(System.in);
+
+		System.out.println("\nSelect the Operation:");
+		System.out.println("\n1 - Preprocess simple .txt file");
+		System.out.println("\n2 - Break .csv file in multiple .csv files");
+		System.out.println("\n3 - Break .csv file  in multiple .txt files (preprocessed body row)");
+		System.out.println("\n4 - Run Test");
+		String input = in.nextLine();
+
+		if (input.equals("1")) {
+			preprocessCommonFile();
+		} else if (input.equals("2")) {
+			breakCsvFileInMultipleCsvFiles();
+		} else if (input.equals("3")) {
+			breakCsvFileInMultipleProcessedTxtFiles();
+		} else if (input.equals("4")) {
+			test();
+		} else {
+			System.out.println("Invalid operation: " + input);
+		}
+
+		in.close();
+
+	}
+
+	public static void preprocessCommonFile() {
+
+		Scanner in = new Scanner(System.in);
 
 		try {
+			System.out.println("\nFull path to the input file:");
+			String inputFilePath = in.nextLine();
+			System.out.println("\nFull path to the input file:");
+			String outputFilePath = in.nextLine();
+
 			System.out.println("Trying to load file");
-			
+
 			File inputFile = new File(inputFilePath);
 			FileReader fileReader = new FileReader(inputFile);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -33,7 +71,7 @@ public class Main {
 			String aux = "";
 
 			while ((aux = bufferedReader.readLine()) != null) {
-				builder.append(aux+"\n");
+				builder.append(aux + "\n");
 			}
 			bufferedReader.close();
 
@@ -42,17 +80,168 @@ public class Main {
 			System.out.println("Processing...");
 			Preprocessor pp = new Preprocessor();
 			String preprocessedText = pp.processString(text);
-			
+
 			FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath);
 			fileOutputStream.write(preprocessedText.getBytes());
 			fileOutputStream.close();
-		              	
+
 			System.out.println("Processing ended.");
 		} catch (FileNotFoundException e) {
-			System.out.println("ERROR: File " + inputFilePath + " not found.");
+			System.out.println("ERROR: File not found.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			in.close();
+		}
+	}
+
+	public static void breakCsvFileInMultipleCsvFiles() {
+
+		Scanner in = new Scanner(System.in);
+
+		System.out.println("\nFull path to the input file:");
+		String inputFilePath = in.nextLine();
+		System.out.println("\nFull path to the output folder:");
+		String outputFolderPath = in.nextLine();
+
+		FileReader fileReader = null;
+		CSVParser csvFileParser = null;
+
+		FileWriter fileWriter = null;
+		CSVPrinter csvFilePrinter = null;
+
+		// Create the CSVFormat object with the header mapping
+		CSVFormat csvFileReaderFormat = CSVFormat.DEFAULT.withHeader();
+		CSVFormat csvFileWriterFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
+
+		try {
+			System.out.println("Trying to load file");
+
+			fileReader = new FileReader(inputFilePath);
+			csvFileParser = new CSVParser(fileReader, csvFileReaderFormat);
+
+			System.out.println("File loaded!");
+
+			Map<String, Integer> headerValues = csvFileParser.getHeaderMap();
+			List<CSVRecord> csvRecords = csvFileParser.getRecords();
+
+			String id;
+			String outputFilePath;
+
+			for (CSVRecord record : csvRecords) {
+
+				// System.out.println(record.getRecordNumber());
+				id = record.get("Id");
+
+				if (id == null) {
+					System.out.println("Error: Every .csv record must have an 'Id' value.");
+					break;
+				} else {
+
+					outputFilePath = outputFolderPath + "\\" + CSV_OUTPUT_FOLDER_NAME + "\\" + id + ".csv";
+					Util.createFileWithFolders(outputFilePath);
+
+					fileWriter = new FileWriter(outputFilePath);
+					csvFilePrinter = new CSVPrinter(fileWriter, csvFileWriterFormat);
+
+					csvFilePrinter.printRecord(Util.csvHeaderMapToList(headerValues));
+					csvFilePrinter.printRecord(Util.csvRecordToList(record));
+
+					fileWriter.flush();
+					fileWriter.close();
+					csvFilePrinter.close();
+				}
+			}
+
+			System.out.println("Files created successfully!");
+		} catch (FileNotFoundException e) {
+			System.out.println("Error! File not found.");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			in.close();
+
+			try {
+				fileReader.close();
+				csvFileParser.close();
+			} catch (IOException e) {
+				System.out.println("Error while closing fileReader and csvFileParser.");
+			}
+		}
+
+	}
+
+	public static void breakCsvFileInMultipleProcessedTxtFiles() {
+		Scanner in = new Scanner(System.in);
+
+		System.out.println("\nFull path to the input file:");
+		String inputFilePath = in.nextLine();
+		System.out.println("\nFull path to the output folder:");
+		String outputFolderPath = in.nextLine();
+
+		FileReader fileReader = null;
+		CSVParser csvFileParser = null;
+
+		// Create the CSVFormat object with the header mapping
+		CSVFormat csvFileReaderFormat = CSVFormat.DEFAULT.withHeader();
+
+		try {
+			System.out.println("Trying to load file");
+
+			Preprocessor pp = new Preprocessor();
+			
+			fileReader = new FileReader(inputFilePath);
+			csvFileParser = new CSVParser(fileReader, csvFileReaderFormat);
+
+			FileOutputStream fileOutputStream;
+
+			System.out.println("File loaded!");
+
+			List<CSVRecord> csvRecords = csvFileParser.getRecords();
+
+			String id;
+			String bodyText;
+			String outputFilePath;
+
+			for (CSVRecord record : csvRecords) {
+
+				System.out.println(record.getRecordNumber());
+				id = record.get("Id");
+				bodyText = record.get("Body");
+
+				if (id == null) {
+					System.out.println("Error: Every .csv record must have an 'Id' value and a 'Body' value.");
+					break;
+				} else {
+
+					outputFilePath = outputFolderPath + "\\" + CSV_OUTPUT_BODY_FOLDER_NAME + "\\" + id + ".txt";
+					Util.createFileWithFolders(outputFilePath);
+
+					String preprocessedText = pp.processString(bodyText);
+
+					fileOutputStream = new FileOutputStream(outputFilePath);
+					fileOutputStream.write(preprocessedText.getBytes());
+					fileOutputStream.close();
+				}
+			}
+
+			System.out.println("Files created successfully!");
+		} catch (FileNotFoundException e) {
+			System.out.println("Error! File not found.");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			in.close();
+
+			try {
+				fileReader.close();
+				csvFileParser.close();
+			} catch (IOException e) {
+				System.out.println("Error while closing fileReader and csvFileParser.");
+			}
 		}
 
 	}
@@ -78,12 +267,10 @@ public class Main {
 				.removeHtmlTags("Esse e meu codigo <a href=''> oiii <code> ahahahaha <code> oiii <code> lelele");
 		System.out.println(test2);
 
-		String test3 = pp
-				.removeStopWords("This is a text, with a lot of information! I'm so happy");
+		String test3 = pp.removeStopWords("This is a text, with a lot of information! I'm so happy");
 		System.out.println(test3);
 
-		String test4 = pp
-				.removePunctuation("This. is a text, with a lot of .information.com!");
+		String test4 = pp.removePunctuation("This. is a text, with a lot of .information.com!");
 		System.out.println(test4);
 
 		String test5 = "<p>I've been having issues getting the C sockets API to work properly in "
@@ -94,5 +281,10 @@ public class Main {
 
 		System.out.println();
 		System.out.println(pp.processString(test5));
+		
+		String test6 = "XXXX<code> blabla </code> YYY <code> blabla2 </code>. ZZZ";
+		System.out.println(pp.removeCodeSnippets(test6));
+		System.out.println(pp.processString(test6));
 	}
+
 }

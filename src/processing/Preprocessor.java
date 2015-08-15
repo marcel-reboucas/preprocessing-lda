@@ -39,8 +39,27 @@ public class Preprocessor {
 	 */
 	public String removeCodeSnippets(String text) {
 
+		String startingCode = "<code>";
+		String endingCode = "</code>";
 		String result = text;
-		result = result.replaceAll("<code>(?s:.)*</code>", "");
+
+		boolean endedRemovingCodeSnippets = false;
+
+		int startingIndex;
+		int endingIndex;
+
+		while (!endedRemovingCodeSnippets) {
+			startingIndex = result.indexOf(startingCode);
+			endingIndex = result.indexOf(endingCode);
+
+			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
+				result = result.substring(0, startingIndex)+ " "
+						+ result.substring(endingIndex + endingCode.length(), result.length());
+			} else {
+				endedRemovingCodeSnippets = true;
+			}
+		}
+
 		result = result.replaceAll("\\s+", " ");
 		return result.trim();
 	}
@@ -77,8 +96,7 @@ public class Preprocessor {
 				// undesiredMatches
 				// ie. prevents I removing the I in I'm.
 				String undesiredMatches = "'`";
-				result = result.replaceAll("\\b" + word + "\\b(?!["
-						+ undesiredMatches + "].*)", "");
+				result = result.replaceAll("\\b" + word + "\\b(?![" + undesiredMatches + "].*)", "");
 			}
 		}
 		result = result.replaceAll("\\s+", " ");
@@ -163,10 +181,10 @@ public class Preprocessor {
 		InputStream is = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(RESOURCES_FOLDER + STOP_WORDS_FILE);
 
-		//System.out.println(RESOURCES_FOLDER + STOP_WORDS_FILE);
+		// System.out.println(RESOURCES_FOLDER + STOP_WORDS_FILE);
 
 		try {
-			
+
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 
@@ -181,12 +199,10 @@ public class Preprocessor {
 
 		} catch (IOException e) {
 			// e.printStackTrace();
-			System.out.println("ERROR: Error reading a line in the file "
-					+ RESOURCES_FOLDER + STOP_WORDS_FILE);
-		} catch (NullPointerException e){
-			
-			System.out.println("ERROR: Error loading resources "
-					+ RESOURCES_FOLDER + STOP_WORDS_FILE);
+			System.out.println("ERROR: Error reading a line in the file " + RESOURCES_FOLDER + STOP_WORDS_FILE);
+		} catch (NullPointerException e) {
+
+			System.out.println("ERROR: Error loading resources " + RESOURCES_FOLDER + STOP_WORDS_FILE);
 		}
 
 	}
