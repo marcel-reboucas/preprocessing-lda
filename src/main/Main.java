@@ -22,7 +22,8 @@ import processing.Preprocessor;
 public class Main {
 
 	public final static String CSV_OUTPUT_FOLDER_NAME = "output";
-	public final static String CSV_OUTPUT_BODY_FOLDER_NAME = "outputBody";
+	public final static String CSV_OUTPUT_PREPROCESSED_FOLDER_NAME = "output-preprocessed-files";
+	public final static String CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME = "output-preprocessed-files-with-answers";
 
 	public static void main(String[] args) {
 
@@ -30,9 +31,10 @@ public class Main {
 
 		System.out.println("\nSelect the Operation:");
 		System.out.println("\n1 - Preprocess simple .txt file");
-		System.out.println("\n2 - Break .csv file in multiple .csv files");
-		System.out.println("\n3 - Break .csv file  in multiple .txt files (preprocessed body row)");
-		System.out.println("\n4 - Run Test");
+		System.out.println("\n2 - Break .csv file in multiple .csv files (without processing)");
+		System.out.println("\n3 - Break .csv file in multiple .txt files (preprocessed title and body row)");
+		System.out.println("\n4 - Break questions .csv file and answers .csv in multiple .txt files (preprocessed with answers)");
+		System.out.println("\n5 - Run Test");
 		String input = in.nextLine();
 
 		if (input.equals("1")) {
@@ -42,6 +44,8 @@ public class Main {
 		} else if (input.equals("3")) {
 			breakCsvFileInMultipleProcessedTxtFiles();
 		} else if (input.equals("4")) {
+			breakCsvFileInMultipleProcessedTxtFilesWithAnswers();
+		} else if (input.equals("5")) {
 			test();
 		} else {
 			System.out.println("Invalid operation: " + input);
@@ -139,7 +143,8 @@ public class Main {
 					break;
 				} else {
 
-					outputFilePath = outputFolderPath + "\\" + CSV_OUTPUT_FOLDER_NAME + "\\" + id + ".csv";
+					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_FOLDER_NAME + File.separator + id
+							+ ".csv";
 					Util.createFileWithFolders(outputFilePath);
 
 					fileWriter = new FileWriter(outputFilePath);
@@ -191,7 +196,7 @@ public class Main {
 			System.out.println("Trying to load file");
 
 			Preprocessor pp = new Preprocessor();
-			
+
 			fileReader = new FileReader(inputFilePath);
 			csvFileParser = new CSVParser(fileReader, csvFileReaderFormat);
 
@@ -202,24 +207,35 @@ public class Main {
 			List<CSVRecord> csvRecords = csvFileParser.getRecords();
 
 			String id;
+			String titleText;
 			String bodyText;
 			String outputFilePath;
 
+			StringBuilder builder;
 			for (CSVRecord record : csvRecords) {
 
 				System.out.println(record.getRecordNumber());
 				id = record.get("Id");
+
+				titleText = record.get("Title");
 				bodyText = record.get("Body");
 
-				if (id == null) {
+				if (id == null || bodyText == null) {
 					System.out.println("Error: Every .csv record must have an 'Id' value and a 'Body' value.");
 					break;
 				} else {
 
-					outputFilePath = outputFolderPath + "\\" + CSV_OUTPUT_BODY_FOLDER_NAME + "\\" + id + ".txt";
+					builder = new StringBuilder(bodyText);
+					
+					if (titleText != null) {
+						builder.insert(0, titleText+" ");
+					}
+
+					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_PREPROCESSED_FOLDER_NAME
+							+ File.separator + id + ".txt";
 					Util.createFileWithFolders(outputFilePath);
 
-					String preprocessedText = pp.processString(bodyText);
+					String preprocessedText = pp.processString(builder.toString());
 
 					fileOutputStream = new FileOutputStream(outputFilePath);
 					fileOutputStream.write(preprocessedText.getBytes());
@@ -244,6 +260,110 @@ public class Main {
 			}
 		}
 
+	}
+
+	public static void breakCsvFileInMultipleProcessedTxtFilesWithAnswers() {
+		Scanner in = new Scanner(System.in);
+
+		System.out.println("\nFull path to the input file (Questions):");
+		String inputFilePath = in.nextLine();
+		System.out.println("\nFull path to the input file (Answers):");
+		String inputFilePathAnswers = in.nextLine();
+		System.out.println("\nFull path to the output folder:");
+		String outputFolderPath = in.nextLine();
+
+		FileReader fileReaderQuestions = null;
+		CSVParser csvFileParserQuestions = null;
+		
+		FileReader fileReaderAnswers = null;
+		CSVParser csvFileParserAnswers = null;
+
+		// Create the CSVFormat object with the header mapping
+		CSVFormat csvFileReaderFormat = CSVFormat.DEFAULT.withHeader();
+
+		try {
+			System.out.println("Trying to load files");
+
+			Preprocessor pp = new Preprocessor();
+
+			fileReaderQuestions = new FileReader(inputFilePath);
+			csvFileParserQuestions = new CSVParser(fileReaderQuestions, csvFileReaderFormat);
+			List<CSVRecord> csvQuestionsRecords = csvFileParserQuestions.getRecords();
+			fileReaderQuestions.close();
+			csvFileParserQuestions.close();
+			
+			fileReaderAnswers = new FileReader(inputFilePathAnswers);
+			csvFileParserAnswers = new CSVParser(fileReaderAnswers, csvFileReaderFormat);
+			List<CSVRecord> csvAnswers = csvFileParserAnswers.getRecords();
+			fileReaderAnswers.close();
+			csvFileParserAnswers.close();
+			
+			FileOutputStream fileOutputStream;
+
+			System.out.println("Files loaded!");
+
+			String id;
+			String titleText;
+			String bodyText;
+			String outputFilePath;
+
+			StringBuilder builder;
+			
+			for (CSVRecord record : csvQuestionsRecords) {
+
+				System.out.println(record.getRecordNumber());
+				id = record.get("Id");
+
+				titleText = record.get("Title");
+				bodyText = record.get("Body");
+
+				if (id == null || bodyText == null) {
+					System.out.println("Error: Every .csv record must have an 'Id' value and a 'Body' value.");
+					break;
+				} else {
+
+					builder = new StringBuilder(bodyText);
+					
+					if (titleText != null) {
+						builder.insert(0, titleText+" ");
+					}
+					
+					List<CSVRecord> answerList = Util.findAllRecordsWithParentId(csvAnswers, id);
+					
+					for(CSVRecord answer : answerList) {
+						builder.append(" "+answer.get("Body"));
+					}
+					
+					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME
+							+ File.separator + id + ".txt";
+					Util.createFileWithFolders(outputFilePath);
+
+					String preprocessedText = pp.processString(builder.toString());
+
+					fileOutputStream = new FileOutputStream(outputFilePath);
+					fileOutputStream.write(preprocessedText.getBytes());
+					fileOutputStream.close();
+				}
+			}
+
+			System.out.println("Files created successfully!");
+		} catch (FileNotFoundException e) {
+			System.out.println("Error! File not found.");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			in.close();
+
+			try {
+				fileReaderQuestions.close();
+				csvFileParserQuestions.close();
+				fileReaderAnswers.close();
+				csvFileParserAnswers.close();
+			} catch (IOException e) {
+				System.out.println("Error while closing fileReader and csvFileParser.");
+			}
+		}
 	}
 
 	public static void test() {
@@ -281,7 +401,7 @@ public class Main {
 
 		System.out.println();
 		System.out.println(pp.processString(test5));
-		
+
 		String test6 = "XXXX<code> blabla </code> YYY <code> blabla2 </code>. ZZZ";
 		System.out.println(pp.removeCodeSnippets(test6));
 		System.out.println(pp.processString(test6));

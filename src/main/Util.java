@@ -43,4 +43,20 @@ public class Util {
 		
 		return result;
 	}
+	
+	public static List<CSVRecord> findAllRecordsWithParentId(List<CSVRecord> recordList, String parentId){
+		
+		List<CSVRecord> result = new ArrayList<>();
+		
+		for(CSVRecord record : recordList){
+			if (record.get("ParentId").equals(parentId)){
+				result.add(record);
+			}
+		}
+		
+		recordList.removeAll(result);
+		return result;
+	}
+	
+	
 }

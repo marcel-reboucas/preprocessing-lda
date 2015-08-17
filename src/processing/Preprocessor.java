@@ -20,7 +20,7 @@ public class Preprocessor {
 
 	static final String RESOURCES_FOLDER = "resources/";
 	static final String STOP_WORDS_FILE = "stopwords.txt";
-
+	static final String UNDESIRED_MATCHES = "'`";
 	private Stemmer porterStemmer;
 	private List<String> stopWordList;
 
@@ -95,8 +95,8 @@ public class Preprocessor {
 				// doesn't match if followed by the characters in
 				// undesiredMatches
 				// ie. prevents I removing the I in I'm.
-				String undesiredMatches = "'`";
-				result = result.replaceAll("\\b" + word + "\\b(?![" + undesiredMatches + "].*)", "");
+				
+				result = result.replaceAll("\\b" + word + "\\b(?![" + UNDESIRED_MATCHES + "].*)", "");
 			}
 		}
 		result = result.replaceAll("\\s+", " ");
@@ -136,7 +136,8 @@ public class Preprocessor {
 		String result = text;
 		String[] words = text.split("\\s+");
 		List<String> wordsList = Arrays.asList(words);
-
+		
+		String stemmedWord;
 		for (String word : wordsList) {
 
 			// only if the word doesn't have any punctation: prevents an
@@ -145,7 +146,7 @@ public class Preprocessor {
 				porterStemmer.add(word);
 				porterStemmer.stem();
 
-				String stemmedWord = porterStemmer.toString();
+				stemmedWord = porterStemmer.toString();
 				result = result.replaceAll("\\b" + word + "\\b", stemmedWord);
 			}
 		}
