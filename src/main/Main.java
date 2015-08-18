@@ -29,13 +29,13 @@ public class Main {
 
 		Scanner in = new Scanner(System.in);
 
-		System.out.println("\nSelect the Operation:");
-		System.out.println("\n1 - Preprocess simple .txt file");
-		System.out.println("\n2 - Break .csv file in multiple .csv files (without processing)");
-		System.out.println("\n3 - Break .csv file in multiple .txt files (preprocessed title and body row)");
+		System.out.println("Select the Operation:");
+		System.out.println("1 - Preprocess simple .txt file");
+		System.out.println("2 - Break .csv file in multiple .csv files (without processing)");
+		System.out.println("3 - Break .csv file in multiple .txt files (preprocessed title and body row)");
 		System.out
-				.println("\n4 - Break questions .csv file and answers .csv in multiple .txt files (preprocessed with answers)");
-		System.out.println("\n5 - Run Test");
+				.println("4 - Break questions .csv file and answers .csv in multiple .txt files (preprocessed with answers)");
+		System.out.println("5 - Run Test");
 		String input = in.nextLine();
 
 		if (input.equals("1")) {
@@ -225,8 +225,8 @@ public class Main {
 
 					builder = new StringBuilder(bodyText);
 
-					if ( record.get("Title") != null) {
-						builder.insert(0,  record.get("Title") + " ");
+					if (record.get("Title") != null) {
+						builder.insert(0, record.get("Title") + " ");
 					}
 
 					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_PREPROCESSED_FOLDER_NAME
@@ -293,6 +293,7 @@ public class Main {
 			fileReaderAnswers = new FileReader(inputFilePathAnswers);
 			csvFileParserAnswers = new CSVParser(fileReaderAnswers, csvFileReaderFormat);
 			List<CSVRecord> csvAnswers = csvFileParserAnswers.getRecords();
+			Map<String, List<CSVRecord>> questionToAnswersMap = Util.createAnswersMapByParentId(csvAnswers);
 			fileReaderAnswers.close();
 			csvFileParserAnswers.close();
 
@@ -324,12 +325,14 @@ public class Main {
 						builder.insert(0, record.get("Title") + " ");
 					}
 
-					List<CSVRecord> answerList = Util.findAllRecordsWithParentId(csvAnswers, id);
+					List<CSVRecord> answerList = questionToAnswersMap.get(id);
 
-					for (CSVRecord answer : answerList) {
-						builder.append(" " + answer.get("Body"));
-					}
-
+					if (answerList != null) {
+						for (CSVRecord answer : answerList) {
+							builder.append(" " + answer.get("Body"));
+						}
+					} 
+					
 					outputFilePath = outputFolderPath + File.separator
 							+ CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME + File.separator + id + ".txt";
 					Util.createFileWithFolders(outputFilePath);

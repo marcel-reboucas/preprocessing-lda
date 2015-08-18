@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,23 +62,26 @@ public class Util {
 		return result;
 	}
 
-	/**
-	 * @param recordList
-	 * @param parentId
-	 * @return
-	 */
-	public static List<CSVRecord> findAllRecordsWithParentId(List<CSVRecord> recordList, String parentId) {
-
-		List<CSVRecord> result = new ArrayList<>();
-
-		for (CSVRecord record : recordList) {
-			if (record.get("ParentId").equals(parentId)) {
-				result.add(record);
-			} 
-		}
-
-		recordList.removeAll(result);
-		return result;
+	public static Map<String, List<CSVRecord>> createAnswersMapByParentId(List<CSVRecord> answerList){
+		
+		 Map<String, List<CSVRecord>> resultMap =  new HashMap<String, List<CSVRecord>>();
+		 
+		 String parentId;
+		 List<CSVRecord> temp;
+			for (CSVRecord answer : answerList) {
+				parentId = answer.get("ParentId");
+				
+				if (resultMap.containsKey(parentId)){
+					temp = resultMap.get(parentId);
+					temp.add(answer);
+					resultMap.put(parentId,temp);
+				}else {
+					temp = new ArrayList<>();
+					temp.add(answer);
+					resultMap.put(parentId,temp);
+				}
+			}
+			
+		 return resultMap;
 	}
-
 }
