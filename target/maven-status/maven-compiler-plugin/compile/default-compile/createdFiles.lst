@@ -2,3 +2,4 @@ main\Util.class
 main\Main.class
 processing\Preprocessor.class
 porter\Stemmer.class
+main\Util$1.class

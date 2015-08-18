@@ -33,7 +33,8 @@ public class Main {
 		System.out.println("\n1 - Preprocess simple .txt file");
 		System.out.println("\n2 - Break .csv file in multiple .csv files (without processing)");
 		System.out.println("\n3 - Break .csv file in multiple .txt files (preprocessed title and body row)");
-		System.out.println("\n4 - Break questions .csv file and answers .csv in multiple .txt files (preprocessed with answers)");
+		System.out
+				.println("\n4 - Break questions .csv file and answers .csv in multiple .txt files (preprocessed with answers)");
 		System.out.println("\n5 - Run Test");
 		String input = in.nextLine();
 
@@ -207,7 +208,6 @@ public class Main {
 			List<CSVRecord> csvRecords = csvFileParser.getRecords();
 
 			String id;
-			String titleText;
 			String bodyText;
 			String outputFilePath;
 
@@ -216,8 +216,6 @@ public class Main {
 
 				System.out.println(record.getRecordNumber());
 				id = record.get("Id");
-
-				titleText = record.get("Title");
 				bodyText = record.get("Body");
 
 				if (id == null || bodyText == null) {
@@ -226,9 +224,9 @@ public class Main {
 				} else {
 
 					builder = new StringBuilder(bodyText);
-					
-					if (titleText != null) {
-						builder.insert(0, titleText+" ");
+
+					if ( record.get("Title") != null) {
+						builder.insert(0,  record.get("Title") + " ");
 					}
 
 					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_PREPROCESSED_FOLDER_NAME
@@ -274,7 +272,7 @@ public class Main {
 
 		FileReader fileReaderQuestions = null;
 		CSVParser csvFileParserQuestions = null;
-		
+
 		FileReader fileReaderAnswers = null;
 		CSVParser csvFileParserAnswers = null;
 
@@ -291,30 +289,28 @@ public class Main {
 			List<CSVRecord> csvQuestionsRecords = csvFileParserQuestions.getRecords();
 			fileReaderQuestions.close();
 			csvFileParserQuestions.close();
-			
+
 			fileReaderAnswers = new FileReader(inputFilePathAnswers);
 			csvFileParserAnswers = new CSVParser(fileReaderAnswers, csvFileReaderFormat);
 			List<CSVRecord> csvAnswers = csvFileParserAnswers.getRecords();
 			fileReaderAnswers.close();
 			csvFileParserAnswers.close();
-			
+
 			FileOutputStream fileOutputStream;
 
 			System.out.println("Files loaded!");
 
 			String id;
-			String titleText;
 			String bodyText;
 			String outputFilePath;
 
 			StringBuilder builder;
-			
+
 			for (CSVRecord record : csvQuestionsRecords) {
 
 				System.out.println(record.getRecordNumber());
 				id = record.get("Id");
 
-				titleText = record.get("Title");
 				bodyText = record.get("Body");
 
 				if (id == null || bodyText == null) {
@@ -323,19 +319,19 @@ public class Main {
 				} else {
 
 					builder = new StringBuilder(bodyText);
-					
-					if (titleText != null) {
-						builder.insert(0, titleText+" ");
+
+					if (record.get("Title") != null) {
+						builder.insert(0, record.get("Title") + " ");
 					}
-					
+
 					List<CSVRecord> answerList = Util.findAllRecordsWithParentId(csvAnswers, id);
-					
-					for(CSVRecord answer : answerList) {
-						builder.append(" "+answer.get("Body"));
+
+					for (CSVRecord answer : answerList) {
+						builder.append(" " + answer.get("Body"));
 					}
-					
-					outputFilePath = outputFolderPath + File.separator + CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME
-							+ File.separator + id + ".txt";
+
+					outputFilePath = outputFolderPath + File.separator
+							+ CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME + File.separator + id + ".txt";
 					Util.createFileWithFolders(outputFilePath);
 
 					String preprocessedText = pp.processString(builder.toString());
