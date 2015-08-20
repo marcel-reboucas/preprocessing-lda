@@ -225,7 +225,8 @@ public class Main {
 
 					builder = new StringBuilder(bodyText);
 
-					if (record.get("Title") != null) {
+					
+					if (record.isMapped("Title")) {
 						builder.insert(0, record.get("Title") + " ");
 					}
 
@@ -321,7 +322,7 @@ public class Main {
 
 					builder = new StringBuilder(bodyText);
 
-					if (record.get("Title") != null) {
+					if (record.isMapped("Title")) {
 						builder.insert(0, record.get("Title") + " ");
 					}
 
