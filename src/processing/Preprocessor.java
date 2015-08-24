@@ -29,7 +29,75 @@ public class Preprocessor {
 		this.stopWordList = new ArrayList<String>();
 		this.loadStopWordsFromFile();
 	}
+	
+	/**
+	 * This method will remove any text between blockquote tags, including the tags.
+	 * 
+	 * @param text
+	 *            The text with tags to be removed.
+	 * @return The text without the code tags.
+	 */
+	public String removeBlockQuotes(String text) {
 
+		String startingQuote = "<blockquote>";
+		String endingQuote = "</blockquote>";
+		String result = text;
+
+		boolean endedRemovingBlockQuotes = false;
+
+		int startingIndex;
+		int endingIndex;
+
+		while (!endedRemovingBlockQuotes) {
+			startingIndex = result.indexOf(startingQuote);
+			endingIndex = result.indexOf(endingQuote);
+
+			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
+				result = result.substring(0, startingIndex)+ " "
+						+ result.substring(endingIndex + endingQuote.length(), result.length());
+			} else {
+				endedRemovingBlockQuotes = true;
+			}
+		}
+
+		result = result.replaceAll("\\s+", " ");
+		return result.trim();
+	}
+	
+	/**
+	 * This method will remove any text between blockquote tags, including the tags.
+	 * 
+	 * @param text
+	 *            The text with tags to be removed.
+	 * @return The text without the code tags.
+	 */
+	public String removePreBlocks(String text) {
+
+		String startingBlock = "<pre>";
+		String endingBlock = "</pre>";
+		String result = text;
+
+		boolean endedRemovingPreBlocks = false;
+
+		int startingIndex;
+		int endingIndex;
+
+		while (!endedRemovingPreBlocks) {
+			startingIndex = result.indexOf(startingBlock);
+			endingIndex = result.indexOf(endingBlock);
+
+			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
+				result = result.substring(0, startingIndex)+ " "
+						+ result.substring(endingIndex + endingBlock.length(), result.length());
+			} else {
+				endedRemovingPreBlocks = true;
+			}
+		}
+
+		result = result.replaceAll("\\s+", " ");
+		return result.trim();
+	}
+	
 	/**
 	 * This method will remove any text between code tags, including the tags.
 	 * 
@@ -95,7 +163,6 @@ public class Preprocessor {
 				// doesn't match if followed by the characters in
 				// undesiredMatches
 				// ie. prevents I removing the I in I'm.
-				
 				result = result.replaceAll("\\b" + word + "\\b(?![" + UNDESIRED_MATCHES + "].*)", "");
 			}
 		}
@@ -165,6 +232,8 @@ public class Preprocessor {
 		String result = text.toLowerCase();
 
 		result = this.removeCodeSnippets(result);
+		result = this.removeBlockQuotes(result);
+		result = this.removePreBlocks(result);
 		result = this.removeHtmlTags(result);
 		result = this.removeStopWords(result);
 		result = this.removePunctuation(result);
@@ -191,13 +260,13 @@ public class Preprocessor {
 
 			String line = null;
 			while ((line = br.readLine()) != null) {
-				String[] words = line.split("\\ss*");
+				String[] words = line.split("\\s+");
 
 				for (String word : words) {
-					this.stopWordList.add(word.toLowerCase());
+					this.stopWordList.add(word.toLowerCase().trim());
 				}
 			}
-
+			System.out.println(this.stopWordList);
 		} catch (IOException e) {
 			// e.printStackTrace();
 			System.out.println("ERROR: Error reading a line in the file " + RESOURCES_FOLDER + STOP_WORDS_FILE);
