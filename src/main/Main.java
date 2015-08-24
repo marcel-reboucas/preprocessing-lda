@@ -30,7 +30,7 @@ public class Main {
 		Scanner in = new Scanner(System.in);
 
 		System.out.println("Select the Operation:");
-		System.out.println("1 - Preprocess simple .txt file");
+		System.out.println("1 - Preprocess a simple .txt file");
 		System.out.println("2 - Break .csv file in multiple .csv files (without processing)");
 		System.out.println("3 - Break .csv file in multiple .txt files (preprocessed title and body row)");
 		System.out
@@ -225,7 +225,6 @@ public class Main {
 
 					builder = new StringBuilder(bodyText);
 
-					
 					if (record.isMapped("Title")) {
 						builder.insert(0, record.get("Title") + " ");
 					}
@@ -332,8 +331,8 @@ public class Main {
 						for (CSVRecord answer : answerList) {
 							builder.append(" " + answer.get("Body"));
 						}
-					} 
-					
+					}
+
 					outputFilePath = outputFolderPath + File.separator
 							+ CSV_OUTPUT_PREPROCESSED_WITH_ANSWERS_FOLDER_NAME + File.separator + id + ".txt";
 					Util.createFileWithFolders(outputFilePath);
@@ -379,8 +378,9 @@ public class Main {
 		st.stem();
 		System.out.println(st.toString());
 
-		String test1 = pp
-				.removeCodeSnippets("Esse e <oi> meu </oi> codigo <code> oiii <code> ahahahaha </code> oiii </code> lelele");
+		String test1 = pp.removeTextBetweenTags(
+				"Esse e <oi> meu </oi> codigo <code> oiii </code> ahahahaha <code> oiii </code> lelele", "<code>",
+				"</code>");
 		System.out.println(test1);
 
 		String test2 = pp
@@ -403,7 +403,7 @@ public class Main {
 		System.out.println(pp.processString(test5));
 
 		String test6 = "XXXX<code> blabla </code> YYY <code> blabla2 </code>. ZZZ";
-		System.out.println(pp.removeCodeSnippets(test6));
+		System.out.println(pp.removeTextBetweenTags(test6, "<code>", "</code>"));
 		System.out.println(pp.processString(test6));
 	}
 

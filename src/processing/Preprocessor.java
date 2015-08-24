@@ -31,84 +31,17 @@ public class Preprocessor {
 	}
 	
 	/**
-	 * This method will remove any text between blockquote tags, including the tags.
+	 * This method will remove any text between the specified tags, including the tags.
 	 * 
-	 * @param text
-	 *            The text with tags to be removed.
+	 * @param text The text with tags to be removed.
+	 * @param startingTag The opening tag (i.e. <code>code</code>)
+	 * @param closingTag The opening tag (i.e. <code>/code</code>)
 	 * @return The text without the code tags.
 	 */
-	public String removeBlockQuotes(String text) {
+	public String removeTextBetweenTags(String text, String startingTag, String closingTag) {
 
-		String startingQuote = "<blockquote>";
-		String endingQuote = "</blockquote>";
-		String result = text;
-
-		boolean endedRemovingBlockQuotes = false;
-
-		int startingIndex;
-		int endingIndex;
-
-		while (!endedRemovingBlockQuotes) {
-			startingIndex = result.indexOf(startingQuote);
-			endingIndex = result.indexOf(endingQuote);
-
-			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
-				result = result.substring(0, startingIndex)+ " "
-						+ result.substring(endingIndex + endingQuote.length(), result.length());
-			} else {
-				endedRemovingBlockQuotes = true;
-			}
-		}
-
-		result = result.replaceAll("\\s+", " ");
-		return result.trim();
-	}
-	
-	/**
-	 * This method will remove any text between blockquote tags, including the tags.
-	 * 
-	 * @param text
-	 *            The text with tags to be removed.
-	 * @return The text without the code tags.
-	 */
-	public String removePreBlocks(String text) {
-
-		String startingBlock = "<pre>";
-		String endingBlock = "</pre>";
-		String result = text;
-
-		boolean endedRemovingPreBlocks = false;
-
-		int startingIndex;
-		int endingIndex;
-
-		while (!endedRemovingPreBlocks) {
-			startingIndex = result.indexOf(startingBlock);
-			endingIndex = result.indexOf(endingBlock);
-
-			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
-				result = result.substring(0, startingIndex)+ " "
-						+ result.substring(endingIndex + endingBlock.length(), result.length());
-			} else {
-				endedRemovingPreBlocks = true;
-			}
-		}
-
-		result = result.replaceAll("\\s+", " ");
-		return result.trim();
-	}
-	
-	/**
-	 * This method will remove any text between code tags, including the tags.
-	 * 
-	 * @param text
-	 *            The text with tags to be removed.
-	 * @return The text without the code tags.
-	 */
-	public String removeCodeSnippets(String text) {
-
-		String startingCode = "<code>";
-		String endingCode = "</code>";
+		String startingCode = startingTag;
+		String endingCode = closingTag;
 		String result = text;
 
 		boolean endedRemovingCodeSnippets = false;
@@ -224,16 +157,16 @@ public class Preprocessor {
 	/**
 	 * This method applies all the processing steps to the text.
 	 * 
-	 * @param text
-	 * @return
+	 * @param text The string to be processed.
+	 * @return A processed string.
 	 */
 	public String processString(String text) {
 
 		String result = text.toLowerCase();
 
-		result = this.removeCodeSnippets(result);
-		result = this.removeBlockQuotes(result);
-		result = this.removePreBlocks(result);
+		result = this.removeTextBetweenTags(result, "<code>", "</code>");
+		result = this.removeTextBetweenTags(result, "<blockquote>", "</blockquote>");
+		result = this.removeTextBetweenTags(result, "<pre>", "</pre>");
 		result = this.removeHtmlTags(result);
 		result = this.removeStopWords(result);
 		result = this.removePunctuation(result);
@@ -251,7 +184,6 @@ public class Preprocessor {
 		InputStream is = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(RESOURCES_FOLDER + STOP_WORDS_FILE);
 
-		// System.out.println(RESOURCES_FOLDER + STOP_WORDS_FILE);
 
 		try {
 
@@ -268,10 +200,8 @@ public class Preprocessor {
 			}
 			System.out.println(this.stopWordList);
 		} catch (IOException e) {
-			// e.printStackTrace();
 			System.out.println("ERROR: Error reading a line in the file " + RESOURCES_FOLDER + STOP_WORDS_FILE);
 		} catch (NullPointerException e) {
-
 			System.out.println("ERROR: Error loading resources " + RESOURCES_FOLDER + STOP_WORDS_FILE);
 		}
 
