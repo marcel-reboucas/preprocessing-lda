@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.jsoup.Jsoup;
 
@@ -29,13 +30,17 @@ public class Preprocessor {
 		this.stopWordList = new ArrayList<String>();
 		this.loadStopWordsFromFile();
 	}
-	
+
 	/**
-	 * This method will remove any text between the specified tags, including the tags.
+	 * This method will remove any text between the specified tags, including
+	 * the tags.
 	 * 
-	 * @param text The text with tags to be removed.
-	 * @param startingTag The opening tag (i.e. <code>code</code>)
-	 * @param closingTag The opening tag (i.e. <code>/code</code>)
+	 * @param text
+	 *            The text with tags to be removed.
+	 * @param startingTag
+	 *            The opening tag (i.e. <code>code</code>)
+	 * @param closingTag
+	 *            The opening tag (i.e. <code>/code</code>)
 	 * @return The text without the code tags.
 	 */
 	public String removeTextBetweenTags(String text, String startingTag, String closingTag) {
@@ -54,7 +59,7 @@ public class Preprocessor {
 			endingIndex = result.indexOf(endingCode);
 
 			if (startingIndex > 0 && endingIndex > 0 && startingIndex < endingIndex) {
-				result = result.substring(0, startingIndex)+ " "
+				result = result.substring(0, startingIndex) + " "
 						+ result.substring(endingIndex + endingCode.length(), result.length());
 			} else {
 				endedRemovingCodeSnippets = true;
@@ -122,6 +127,46 @@ public class Preprocessor {
 	}
 
 	/**
+	 * This method removes the urls from the text.
+	 * 
+	 * @param text
+	 *            The text with urls to be removed.
+	 * @return The text without the punctuation.
+	 */
+	public String removeURLs(String text) {
+
+		
+		String result = text;
+		Matcher m = URLValidation.REGEX.matcher(result);
+		
+		while (m.find()) {
+			result = result.substring(0, m.start()) + result.substring(m.end()+1, result.length());
+			m = URLValidation.REGEX.matcher(result);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * This method removes the single letters from the text.
+	 * 
+	 * @param text
+	 *            The text with single letters to be removed.
+	 * @return The text without the punctuation.
+	 */
+	public String removeSingleLetters(String text) {
+
+		String result = text;
+
+		// 1. (^| ) -> Beginning of line or space
+		// 2. [^c] -> Any character except c
+		// 3. ( |$) -> Space or End of line
+		result = result.replaceAll("(^| )[^c]( |$)", " ");
+
+		return result;
+	}
+
+	/**
 	 * This method applies the Porter Stemming Algorithm
 	 * <code>(http://tartarus.org/martin/PorterStemmer/)</code> to every word in
 	 * the text.
@@ -136,7 +181,7 @@ public class Preprocessor {
 		String result = text;
 		String[] words = text.split("\\s+");
 		List<String> wordsList = Arrays.asList(words);
-		
+
 		String stemmedWord;
 		for (String word : wordsList) {
 
@@ -157,7 +202,8 @@ public class Preprocessor {
 	/**
 	 * This method applies all the processing steps to the text.
 	 * 
-	 * @param text The string to be processed.
+	 * @param text
+	 *            The string to be processed.
 	 * @return A processed string.
 	 */
 	public String processString(String text) {
@@ -168,8 +214,10 @@ public class Preprocessor {
 		result = this.removeTextBetweenTags(result, "<blockquote>", "</blockquote>");
 		result = this.removeTextBetweenTags(result, "<pre>", "</pre>");
 		result = this.removeHtmlTags(result);
+		result = this.removeURLs(result);
 		result = this.removeStopWords(result);
 		result = this.removePunctuation(result);
+		result = this.removeSingleLetters(result);
 		result = this.applyPorterStemmer(result);
 
 		return result;
@@ -183,7 +231,6 @@ public class Preprocessor {
 
 		InputStream is = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(RESOURCES_FOLDER + STOP_WORDS_FILE);
-
 
 		try {
 
