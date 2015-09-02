@@ -119,6 +119,8 @@ public class Preprocessor {
 
 		String result = text;
 
+		// removes the ' characters (shouldn't -> shouldn t) why? because mallet does this and was considering "t" as a word. it should be removed.
+		result = result.replaceAll("['`]", " ");
 		// removes the trailing punctuation (leaves + and _ characters).
 		result = result.replaceAll("[\\p{Punct}&&[^+_]]\\B", "");
 		// removes the leading punctuation (leaves + and _ characters).
@@ -140,7 +142,12 @@ public class Preprocessor {
 		Matcher m = URLValidation.REGEX.matcher(result);
 		
 		while (m.find()) {
-			result = result.substring(0, m.start()) + result.substring(m.end()+1, result.length());
+			if(m.end() == result.length()) {
+				result = result.substring(0, m.start());
+			} else {
+				result = result.substring(0, m.start()) + result.substring(m.end()+1, result.length());
+			}
+	
 			m = URLValidation.REGEX.matcher(result);
 		}
 		
